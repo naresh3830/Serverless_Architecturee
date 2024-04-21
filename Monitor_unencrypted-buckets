@@ -1,0 +1,21 @@
+import json
+import boto3
+
+def lambda_handler(event, context):
+    
+    s3_client = boto3.client("s3")
+    response = s3_client.list_buckets()
+  
+    unencrypted_buckets = [] 
+    
+    for item in response['Buckets']:
+        bucket_name=item['Name']
+        
+        response = s3_client.get_bucket_encryption(Bucket=bucket_name)
+        if response['ServerSideEncryptionConfiguration']['Rules'][0]['BucketKeyEnabled'] == False:
+            unencrypted_buckets.append(bucket_name)
+
+        # Print unencrypted bucket names
+    print("Unencrypted Buckets:")
+    for bucket_name in unencrypted_buckets:
+        print(bucket_name)
