@@ -1,0 +1,31 @@
+import json
+import boto3
+from datetime import datetime, timedelta, timezone
+
+def lambda_handler(event, context):
+    
+    bucket_name = "s3-management-log"
+    s3_client = boto3.client("s3")
+    
+    time_threshold = datetime.now(timezone.utc) - timedelta(minutes=310)
+    response = s3_client.list_objects_v2(Bucket=bucket_name)
+    
+    if 'Contents' in response:
+        print("Listing the available objects in the bucket ")
+        for obj in response['Contents']:
+            key = obj['Key']
+            print(key)
+            
+        for obj in response['Contents']:
+            key = obj['Key']
+            last_modified = obj['LastModified']
+            
+            # Check if object is older than 30 minutes
+            if last_modified < time_threshold:
+                # Delete object
+                s3_client.delete_object(Bucket=bucket_name, Key=key)
+                print(f"Deleted object '{key}' because it is older than 5 hours 10 minutes.")
+    else:
+        print("No objects found in the bucket.")
+    
+    
